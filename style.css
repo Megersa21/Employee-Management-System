@@ -1,20 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap');
 
 :root {
-  --primary: #1e40af; /* Official DDU Blue */
-  --primary-hover: #1e3a8a;
-  --secondary: #fbbf24; /* Official DDU Gold */
-  --accent: #10b981;
-  --bg-main: #020617; /* Deeper dark background */
-  --bg-card: rgba(15, 23, 42, 0.7);
-  --bg-sidebar: #0f172a;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --border: rgba(255, 255, 255, 0.08);
-  --glass: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --primary: #154295; /* Exact DDU Royal Blue */
+  --primary-hover: #0e2d6b;
+  --secondary: #fbb03b; /* Exact DDU Gold */
+  --accent: #2e7d32; /* DDU Leaf Green */
+  --bg-main: #0a1128; /* Deep midnight blue background */
+  --bg-card: rgba(16, 24, 48, 0.7);
+  --bg-sidebar: #060b1a;
+  --text-main: #ffffff;
+  --text-muted: #a0aec0;
+  --border: rgba(255, 255, 255, 0.05);
+  --glass: rgba(255, 255, 255, 0.02);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  --transition: all 0.25s ease-out;
 }
 
 * {
@@ -365,6 +365,16 @@ td {
   color: var(--secondary);
 }
 
+.status-paid {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.status-pending {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
 .actions {
   display: flex;
   gap: 0.5rem;
@@ -608,6 +618,63 @@ td {
 
 .animate-fade {
   animation: fadeIn 0.5s ease forwards;
+}
+
+/* Department Specifics */
+.dept-card {
+  border-left: 4px solid var(--primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.dept-card .card-value {
+  font-size: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.dept-card .card-label {
+  font-style: italic;
+  margin-bottom: 0.5rem;
+}
+
+.dept-stats {
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.view-dept-employees {
+  transition: var(--transition);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.view-dept-employees:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.dept-member {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  transition: var(--transition);
+}
+
+.dept-member:hover {
+  background: var(--glass);
+}
+
+.dept-staff-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.dept-staff-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
 }
 
 /* Responsive */

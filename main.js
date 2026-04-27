@@ -5,11 +5,11 @@ const API_URL = "backend/api.php";
 
 // State Management
 let employees = JSON.parse(localStorage.getItem('employees_db')) || [
-    { id: 1, name: 'Megersa Bekele', email: 'megersa.b@ddu.edu.et', role: 'Department Head', dept: 'Software Engineering', status: 'Active' },
-    { id: 2, name: 'Mebrahtu Sefie', email: 'mebrahtu.s@ddu.edu.et', role: 'Senior Lecturer', dept: 'Computer Science', status: 'Active' },
-    { id: 3, name: 'Sisay Melese', email: 'sisay.m@ddu.edu.et', role: 'Assistant Professor', dept: 'Information Technology', status: 'Remote' },
-    { id: 4, name: 'Mirikat Dawit', email: 'mirikat.d@ddu.edu.et', role: 'Lab Assistant', dept: 'Software Engineering', status: 'Active' },
-    { id: 5, name: 'Solomon Geta', email: 'solomon.g@ddu.edu.et', role: 'IT Specialist', dept: 'Information Technology', status: 'Active' },
+    { id: 1, name: 'Megersa Bekele', email: 'megersa.b@ddu.edu.et', role: 'Department Head', dept: 'Software Engineering', status: 'Active', salary: 15000, payrollStatus: 'Paid' },
+    { id: 2, name: 'Mebrahtu Sefie', email: 'mebrahtu.s@ddu.edu.et', role: 'Senior Lecturer', dept: 'Computer Science', status: 'Active', salary: 12000, payrollStatus: 'Pending' },
+    { id: 3, name: 'Sisay Melese', email: 'sisay.m@ddu.edu.et', role: 'Assistant Professor', dept: 'Information Technology', status: 'Remote', salary: 13500, payrollStatus: 'Paid' },
+    { id: 4, name: 'Mirikat Dawit', email: 'mirikat.d@ddu.edu.et', role: 'Lab Assistant', dept: 'Software Engineering', status: 'Active', salary: 8000, payrollStatus: 'Pending' },
+    { id: 5, name: 'Solomon Geta', email: 'solomon.g@ddu.edu.et', role: 'IT Specialist', dept: 'Information Technology', status: 'Active', salary: 9500, payrollStatus: 'Paid' },
 ];
 
 let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
@@ -41,9 +41,9 @@ const getStats = () => {
     const activeCount = employees.filter(e => e.status === 'Active').length;
 
     return [
-        { label: 'Total Faculty', value: totalEmployees, icon: 'users', color: '#6366f1', trend: '+'+(totalEmployees > 5 ? totalEmployees-5 : 0), trendUp: true },
-        { label: 'Avg Salary', value: '$' + Math.round(avgSalary).toLocaleString(), icon: 'credit-card', color: '#a855f7', trend: 'Market', trendUp: true },
-        { label: 'Active Staff', value: activeCount, icon: 'shield-check', color: '#10b981', trend: Math.round((activeCount/totalEmployees)*100) + '%', trendUp: true },
+        { label: 'Total Faculty', value: totalEmployees, icon: 'users', color: '#154295', trend: '+' + (totalEmployees > 5 ? totalEmployees - 5 : 0), trendUp: true },
+        { label: 'Avg Salary', value: '$' + Math.round(avgSalary).toLocaleString(), icon: 'credit-card', color: '#fbb03b', trend: 'Market', trendUp: true },
+        { label: 'Active Staff', value: activeCount, icon: 'shield-check', color: '#2e7d32', trend: Math.round((activeCount / totalEmployees) * 100) + '%', trendUp: true },
         { label: 'System Status', value: 'Live', icon: 'server', color: '#06b6d4', trend: 'Optimal', trendUp: true },
     ];
 };
@@ -94,10 +94,14 @@ const renderDashboard = () => {
     `;
 };
 
-const renderEmployees = () => {
+const renderEmployees = (filterDept = null) => {
     const isAdmin = currentUser?.role === 'Administrator';
 
-    const tableRows = employees.map(emp => `
+    const filteredEmployees = filterDept 
+        ? employees.filter(e => e.dept === filterDept)
+        : employees;
+
+    const tableRows = filteredEmployees.map(emp => `
         <tr class="animate-fade">
             <td>
                 <div class="emp-info">
@@ -110,7 +114,7 @@ const renderEmployees = () => {
             </td>
             <td>${emp.role}</td>
             <td>${emp.dept}</td>
-            <td>$${parseFloat(emp.salary).toLocaleString()}</td>
+            <td>$${parseFloat(emp.salary || 0).toLocaleString()}</td>
             <td>
                 <span class="status-badge status-${emp.status.toLowerCase().replace(' ', '-')}">
                     ${emp.status}
@@ -133,12 +137,15 @@ const renderEmployees = () => {
         <div class="content-section animate-fade">
             <div class="section-header">
                 <div>
-                    <h2>Faculty Directory</h2>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">Manage school staff members</p>
+                    <h2>${filterDept ? `${filterDept} Faculty` : 'Faculty Directory'}</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">${filterDept ? `Viewing all members of ${filterDept}` : 'Manage school staff members'}</p>
                 </div>
-                ${isAdmin ? `
-                    <button class="btn-primary" id="add-staff-btn"><i data-lucide="plus"></i> Add Staff</button>
-                ` : ''}
+                <div style="display: flex; gap: 1rem;">
+                    ${filterDept ? `<button class="btn-ghost" id="clear-filter-btn">Show All</button>` : ''}
+                    ${isAdmin ? `
+                        <button class="btn-primary" id="add-staff-btn"><i data-lucide="plus"></i> Add Staff</button>
+                    ` : ''}
+                </div>
             </div>
             <div style="overflow-x: auto;">
                 <table>
@@ -196,7 +203,7 @@ function openModal(emp = null) {
     const modal = document.getElementById('employee-modal');
     const modalCard = modal.querySelector('.modal-card');
     if (modalCard) modalCard.scrollTop = 0;
-    
+
     const title = document.getElementById('modal-title');
     const form = document.getElementById('employee-form');
 
@@ -237,6 +244,7 @@ async function handleFormSubmit(e) {
         salary: document.getElementById('emp-salary').value,
         join_date: document.getElementById('emp-join-date').value,
         status: document.getElementById('emp-status').value,
+        payrollStatus: 'Pending'
     };
 
     const action = id ? 'update_employee' : 'add_employee';
@@ -281,27 +289,138 @@ async function deleteEmployee(id) {
     navigate('employees');
 }
 
+const renderDepartments = () => {
+    const deptCards = departments.map(dept => {
+        const deptStaff = employees.filter(e => e.dept === dept.name);
+        return `
+            <div class="card animate-fade dept-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: rgba(99, 102, 241, 0.15); color: #6366f1">
+                        <i data-lucide="layers"></i>
+                    </div>
+                    <div class="trend up">Active</div>
+                </div>
+                <div class="card-value">${dept.name}</div>
+                <div class="card-label">Lead: ${dept.lead}</div>
+                
+                <div class="dept-stats" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">Total:</span>
+                    <span style="font-weight: 600; color: var(--primary);">${deptStaff.length} Members</span>
+                </div>
+                <button class="btn-ghost view-dept-employees" data-dept="${dept.name}" style="margin-top: 1rem; width: 100%; font-size: 0.8rem;">Full Directory</button>
+            </div>
+        `;
+    }).join('');
+
+    return `
+        <div class="content-section animate-fade">
+            <div class="section-header">
+                <div>
+                    <h2>Academic Departments</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Manage school departments and their faculty</p>
+                </div>
+                <button class="btn-primary" id="add-dept-as-staff"><i data-lucide="plus"></i> Add Faculty Member</button>
+            </div>
+            <div class="stats-grid">${deptCards}</div>
+        </div>
+    `;
+};
+
+const renderPayroll = () => {
+    const tableRows = employees.map(emp => `
+        <tr class="animate-fade">
+            <td>
+                <div class="emp-info">
+                    <div class="dev-avatar" style="width: 32px; height: 32px; font-size: 0.8rem; margin-bottom: 0;">${emp.name.split(' ').map(n => n[0]).join('')}</div>
+                    <div>
+                        <span class="emp-name">${emp.name}</span>
+                        <span class="emp-email">${emp.dept}</span>
+                    </div>
+                </div>
+            </td>
+            <td>$${parseFloat(emp.salary || 0).toLocaleString()}</td>
+            <td>
+                <span class="status-badge status-${emp.payrollStatus?.toLowerCase() || 'pending'}">
+                    ${emp.payrollStatus || 'Pending'}
+                </span>
+            </td>
+            <td>
+                ${emp.payrollStatus === 'Paid' ?
+            `<button class="btn-ghost reset-pay-btn" data-id="${emp.id}" style="padding: 0.4rem 1rem; font-size: 0.8rem; border-color: #f59e0b; color: #f59e0b;"><i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Reset to Pending</button>` :
+            `<button class="btn-primary pay-btn" data-id="${emp.id}" style="padding: 0.4rem 1rem; font-size: 0.8rem;">Process Payment</button>`
+        }
+            </td>
+        </tr>
+    `).join('');
+
+    const totalPayroll = employees.reduce((acc, e) => acc + (parseFloat(e.salary) || 0), 0);
+    const paidCount = employees.filter(e => e.payrollStatus === 'Paid').length;
+    const pendingCount = employees.length - paidCount;
+
+    return `
+        <div class="stats-grid">
+            <div class="card animate-fade">
+                <div class="card-label">Total Monthly Payroll</div>
+                <div class="card-value">$${totalPayroll.toLocaleString()}</div>
+                <div class="card-label" style="font-size: 0.75rem;">Budget Allocation</div>
+            </div>
+            <div class="card animate-fade">
+                <div class="card-label">Paid Staff</div>
+                <div class="card-value" style="color: #10b981;">${paidCount}</div>
+                <div class="card-label" style="font-size: 0.75rem;">Completed Transactions</div>
+            </div>
+            <div class="card animate-fade">
+                <div class="card-label">Pending Staff</div>
+                <div class="card-value" style="color: #ef4444;">${pendingCount}</div>
+                <div class="card-label" style="font-size: 0.75rem;">Awaiting Payment</div>
+            </div>
+        </div>
+        <div class="content-section animate-fade">
+            <div class="section-header">
+                <h2>Payroll Management</h2>
+                <button class="btn-ghost" id="refresh-payroll"><i data-lucide="rotate-cw"></i> Refresh</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee / Dept</th>
+                            <th>Salary</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+};
+
 // Router
 const views = {
     dashboard: renderDashboard,
     employees: renderEmployees,
-    departments: () => `<div class="content-section"><h2>Departments</h2><p>View restricted.</p></div>`,
-    payroll: () => `<div class="content-section"><h2>Payroll</h2><p>Restricted access.</p></div>`,
+    departments: renderDepartments,
+    payroll: renderPayroll,
     settings: renderSettings,
 };
 
-async function navigate(viewName) {
+async function navigate(viewName, filter = null) {
     const contentArea = document.getElementById('content-area');
 
     if (viewName === 'employees') {
         await fetchEmployees();
     }
 
-    contentArea.innerHTML = views[viewName] ? views[viewName]() : '<h2>404 Not Found</h2>';
+    contentArea.innerHTML = views[viewName] ? views[viewName](filter) : '<h2>404 Not Found</h2>';
 
     // Attach event listeners
     if (viewName === 'employees') {
         document.getElementById('add-staff-btn')?.addEventListener('click', () => openModal());
+        document.getElementById('clear-filter-btn')?.addEventListener('click', () => navigate('employees'));
         document.querySelectorAll('.edit-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const emp = employees.find(e => e.id == btn.dataset.id);
@@ -311,6 +430,44 @@ async function navigate(viewName) {
         document.querySelectorAll('.delete-btn').forEach(btn => {
             btn.addEventListener('click', () => deleteEmployee(btn.dataset.id));
         });
+    }
+
+    if (viewName === 'departments') {
+        document.getElementById('add-dept-as-staff')?.addEventListener('click', () => {
+            openModal();
+        });
+        document.querySelectorAll('.view-dept-employees').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const dept = btn.dataset.dept;
+                navigate('employees', dept);
+            });
+        });
+    }
+
+    if (viewName === 'payroll') {
+        document.querySelectorAll('.pay-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.id;
+                const index = employees.findIndex(e => e.id == id);
+                if (index !== -1) {
+                    employees[index].payrollStatus = 'Paid';
+                    saveToLocal();
+                    navigate('payroll');
+                }
+            });
+        });
+        document.querySelectorAll('.reset-pay-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.id;
+                const index = employees.findIndex(e => e.id == id);
+                if (index !== -1) {
+                    employees[index].payrollStatus = 'Pending';
+                    saveToLocal();
+                    navigate('payroll');
+                }
+            });
+        });
+        document.getElementById('refresh-payroll')?.addEventListener('click', () => navigate('payroll'));
     }
 
     if (viewName === 'settings') {
@@ -392,7 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput?.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase();
         const activeView = document.querySelector('.nav-link.active')?.dataset.view;
-        
+
         if (activeView === 'employees') {
             const rows = document.querySelectorAll('tbody tr');
             rows.forEach(row => {
