@@ -110,8 +110,10 @@ aside {
 }
 
 .logo img {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: auto;
+  object-fit: cover;
+  border-radius: 6px;
 }
 
 .logo-text {
